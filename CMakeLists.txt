@@ -23,11 +23,13 @@ set(SLANG_RHI_HAS_D3D12 OFF)
 set(SLANG_RHI_HAS_VULKAN OFF)
 set(SLANG_RHI_HAS_METAL OFF)
 set(SLANG_RHI_HAS_CUDA OFF)
+set(SLANG_RHI_HAS_WEBGPU OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(SLANG_RHI_HAS_D3D11 ON)
     set(SLANG_RHI_HAS_D3D12 ON)
     set(SLANG_RHI_HAS_VULKAN ON)
     set(SLANG_RHI_HAS_CUDA ON)
+    set(SLANG_RHI_HAS_WEBGPU ON)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(SLANG_RHI_HAS_VULKAN ON)
     set(SLANG_RHI_HAS_CUDA ON)
@@ -42,6 +44,7 @@ cmake_dependent_option(SLANG_RHI_ENABLE_D3D12 "Enable D3D12 backend" ON "SLANG_R
 cmake_dependent_option(SLANG_RHI_ENABLE_VULKAN "Enable Vulkan backend" ON "SLANG_RHI_HAS_VULKAN" OFF)
 cmake_dependent_option(SLANG_RHI_ENABLE_METAL "Enable Metal backend" ON "SLANG_RHI_HAS_METAL" OFF)
 cmake_dependent_option(SLANG_RHI_ENABLE_CUDA "Enable CUDA backend" ON "SLANG_RHI_HAS_CUDA" OFF)
+cmake_dependent_option(SLANG_RHI_ENABLE_WEBGPU "Enable WebGPU backend" ON "SLANG_RHI_HAS_WEBGPU" OFF)
 
 # If this is the master project, fetch binary dependencies.
 if(SLANG_RHI_MASTER_PROJECT)
@@ -162,7 +165,7 @@ if(SLANG_RHI_ENABLE_D3D11 OR SLANG_RHI_HAS_D3D12)
     target_sources(slang-rhi PRIVATE ${D3D_SOURCES})
 endif()
 if(SLANG_RHI_ENABLE_D3D11)
-        file(GLOB D3D11_SOURCES src/d3d11/*.cpp)
+    file(GLOB D3D11_SOURCES src/d3d11/*.cpp)
     target_sources(slang-rhi PRIVATE ${D3D11_SOURCES})
 endif()
 if(SLANG_RHI_ENABLE_D3D12)
@@ -190,6 +193,11 @@ if(SLANG_RHI_ENABLE_CUDA)
     file(GLOB CUDA_SOURCES src/cuda/*.cpp)
     target_sources(slang-rhi PRIVATE ${CUDA_SOURCES})
 endif()
+if(SLANG_RHI_ENABLE_WEBGPU)
+    file(GLOB WEBGPU_SOURCES src/webgpu/*.cpp)
+    target_sources(slang-rhi PRIVATE ${WEBGPU_SOURCES})
+    target_include_directories(slang-rhi PRIVATE external/webgpu-headers)
+endif()  
 
 target_include_directories(slang-rhi PUBLIC include)
 target_include_directories(slang-rhi PRIVATE src)
@@ -200,6 +208,7 @@ target_compile_definitions(slang-rhi
         SLANG_RHI_ENABLE_VULKAN=$<BOOL:${SLANG_RHI_ENABLE_VULKAN}>
         SLANG_RHI_ENABLE_METAL=$<BOOL:${SLANG_RHI_ENABLE_METAL}>
         SLANG_RHI_ENABLE_CUDA=$<BOOL:${SLANG_RHI_ENABLE_CUDA}>
+        SLANG_RHI_ENABLE_WEBGPU=$<BOOL:${SLANG_RHI_ENABLE_WEBGPU}>
         $<$<PLATFORM_ID:Windows>:NOMINMAX>  # do not define min/max macros
         $<$<PLATFORM_ID:Windows>:UNICODE>   # force character map to unicode
 )

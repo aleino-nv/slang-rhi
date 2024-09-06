@@ -17,6 +17,7 @@ Result SLANG_MCALL createD3D11Device(const IDevice::Desc* desc, IDevice** outDev
 Result SLANG_MCALL createD3D12Device(const IDevice::Desc* desc, IDevice** outDevice);
 Result SLANG_MCALL createVKDevice(const IDevice::Desc* desc, IDevice** outDevice);
 Result SLANG_MCALL createMetalDevice(const IDevice::Desc* desc, IDevice** outDevice);
+Result SLANG_MCALL createWebGPUDevice(const IDevice::Desc* desc, IDevice** outDevice);
 Result SLANG_MCALL createCUDADevice(const IDevice::Desc* desc, IDevice** outDevice);
 Result SLANG_MCALL createCPUDevice(const IDevice::Desc* desc, IDevice** outDevice);
 
@@ -24,6 +25,7 @@ Result SLANG_MCALL getD3D11Adapters(std::vector<AdapterInfo>& outAdapters);
 Result SLANG_MCALL getD3D12Adapters(std::vector<AdapterInfo>& outAdapters);
 Result SLANG_MCALL getVKAdapters(std::vector<AdapterInfo>& outAdapters);
 Result SLANG_MCALL getMetalAdapters(std::vector<AdapterInfo>& outAdapters);
+Result SLANG_MCALL getWebGPUAdapters(std::vector<AdapterInfo>& outAdapters);
 Result SLANG_MCALL getCUDAAdapters(std::vector<AdapterInfo>& outAdapters);
 
 Result SLANG_MCALL reportD3DLiveObjects();
@@ -285,6 +287,11 @@ extern "C"
             SLANG_RETURN_ON_FAIL(getCUDAAdapters(adapters));
             break;
 #endif
+#if SLANG_RHI_ENABLE_WEBGPU
+        case DeviceType::WebGPU:
+            SLANG_RETURN_ON_FAIL(getWebGPUAdapters(adapters));
+            break;
+#endif
         default:
             return SLANG_E_INVALID_ARG;
         }
@@ -340,6 +347,12 @@ extern "C"
         case DeviceType::CUDA:
         {
             return createCUDADevice(desc, outDevice);
+        }
+#endif
+#if SLANG_RHI_ENABLE_WEBGPU
+        case DeviceType::WebGPU:
+        {
+            return createWebGPUDevice(desc, outDevice);
         }
 #endif
         case DeviceType::CPU:
@@ -409,6 +422,8 @@ extern "C"
             return "CPU";
         case DeviceType::CUDA:
             return "CUDA";
+        case DeviceType::WebGPU:
+            return "WebGPU";
         default:
             return "?";
         }
@@ -426,6 +441,8 @@ extern "C"
             return SLANG_RHI_ENABLE_VULKAN;
         case DeviceType::Metal:
             return SLANG_RHI_ENABLE_METAL;
+        case DeviceType::WebGPU:
+            return SLANG_RHI_ENABLE_WEBGPU;
         case DeviceType::CPU:
             return true;
         case DeviceType::CUDA:
